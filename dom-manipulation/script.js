@@ -1,68 +1,120 @@
-// Initial Quotes Array
+// Initial quotes data
 let quotes = [
-  { text: "The only limit to our realization of tomorrow is our doubts of today.", category: "Motivation" },
-  { text: "Life is what happens when you're busy making other plans.", category: "Life" },
-  { text: "Imagination is more important than knowledge.", category: "Inspiration" }
+    { text: "The only way to do great work is to love what you do.", category: "inspiration" },
+    { text: "Innovation distinguishes between a leader and a follower.", category: "business" },
+    { text: "Your time is limited, don't waste it living someone else's life.", category: "life" },
+    { text: "Stay hungry, stay foolish.", category: "inspiration" },
+    { text: "The journey of a thousand miles begins with one step.", category: "life" }
 ];
 
-// DOM Elements
-const quoteDisplay = document.getElementById("quoteDisplay");
-const newQuoteBtn = document.getElementById("newQuote");
-const addQuoteBtn = document.getElementById("addQuoteBtn");
-const categoryFilter = document.getElementById("categoryFilter");
+// DOM elements
+const quoteDisplay = document.getElementById('quoteDisplay');
+const newQuoteBtn = document.getElementById('newQuote');
+const showAddFormBtn = document.getElementById('showAddForm');
+const addQuoteForm = document.getElementById('addQuoteForm');
+const categorySelect = document.getElementById('categorySelect');
 
-// Show Random Quote Function
-function showRandomQuote {
-  const selectedCategory = categoryFilter.value;
-  let filteredQuotes = quotes;
+// Current filter
+let currentCategoryFilter = 'all';
 
-  if (selectedCategory !== "all") {
-    filteredQuotes = quotes.filter(q => q.category.toLowerCase() === selectedCategory.toLowerCase());
-  }
-
-  if (filteredQuotes.length === 0) {
-    quoteDisplay.textContent = "No quotes available in this category.";
-    return;
-  }
-
-  const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
-  quoteDisplay.textContent = `"${filteredQuotes[randomIndex].text}" - [${filteredQuotes[randomIndex].category}]`;
+// Initialize the app
+function init() {
+    // Display a random quote on page load
+    showRandomQuote();
+    
+    // Set up event listeners
+    newQuoteBtn.addEventListener('click', showRandomQuote);
+    showAddFormBtn.addEventListener('click', showAddForm);
+    
+    // Populate category filter
+    updateCategoryFilter();
+    
+    // Set up category filter change listener
+    categorySelect.addEventListener('change', function() {
+        currentCategoryFilter = this.value;
+        showRandomQuote();
+    });
 }
 
-// Add Quote Function
-function addQuoteForm() {
-  const quoteText = document.getElementById("newQuoteText").value.trim();
-  const quoteCategory = document.getElementById("newQuoteCategory").value.trim();
-
-  if (quoteText === "" || quoteCategory === "") {
-    alert("Please enter both a quote and a category.");
-    return;
-  }
-
-  const newQuote = { text: quoteText, category: quoteCategory };
-  quotes.push(newQuote);
-  updateCategoryOptions();
-  document.getElementById("newQuoteText").value = "";
-  document.getElementById("newQuoteCategory").value = "";
-  alert("Quote added successfully!");
+// Display a random quote
+function showRandomQuote() {
+    let filteredQuotes = quotes;
+    
+    // Filter by category if not 'all'
+    if (currentCategoryFilter !== 'all') {
+        filteredQuotes = quotes.filter(quote => quote.category === currentCategoryFilter);
+    }
+    
+    // If no quotes match the filter, show a message
+    if (filteredQuotes.length === 0) {
+        quoteDisplay.innerHTML = `
+            <p class="quote-text">No quotes found in this category.</p>
+            <p class="quote-category"></p>
+        `;
+        return;
+    }
+    
+    // Get a random quote from the filtered list
+    const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
+    const randomQuote = filteredQuotes[randomIndex];
+    
+    // Update the DOM
+    quoteDisplay.innerHTML = `
+        <p class="quote-text">"${randomQuote.text}"</p>
+        <p class="quote-category">— ${randomQuote.category}</p>
+    `;
 }
 
-// Update Categories in Filter Dropdown
-function updateCategoryOptions() {
-  const categories = [...new Set(quotes.map(q => q.category))];
-  categoryFilter.innerHTML = `<option value="all">All</option>`;
-  categories.forEach(cat => {
-    const option = document.createElement("option");
-    option.value = cat;
-    option.textContent = cat;
-    categoryFilter.appendChild(option);
-  });
+// Show the add quote form
+function showAddForm() {
+    addQuoteForm.style.display = 'block';
 }
 
-// Event Listeners
-newQuoteBtn.addEventListener("click", showRandomQuote);
-addQuoteBtn.addEventListener("click", addQuote);
-categoryFilter.addEventListener("change", showRandomQuote);
+// Hide the add quote form
+function hideAddForm() {
+    addQuoteForm.style.display = 'none';
+    // Clear the form fields
+    document.getElementById('newQuoteText').value = '';
+    document.getElementById('newQuoteCategory').value = '';
+}
 
-// Initial Setup
-updateCategoryOptions();
+// Add a new quote
+function addQuote() {
+    const textInput = document.getElementById('newQuoteText');
+    const categoryInput = document.getElementById('newQuoteCategory');
+    
+    const text = textInput.value.trim();
+    const category = categoryInput.value.trim();
+    
+    if (text && category) {
+        // Add the new quote to the array
+        quotes.push({ text, category });
+        
+        // Update the category filter
+        updateCategoryFilter();
+        
+        // Hide the form and clear fields
+        hideAddForm();
+        
+        // Show the new quote
+        showRandomQuote();
+    } else {
+        alert('Please enter both a quote and a category.');
+    }
+}
+
+// Update the category filter dropdown
+function updateCategoryFilter() {
+    // Get all unique categories
+    const categories = ['all', ...new Set(quotes.map(quote => quote.category))];
+    
+    // Update the dropdown
+    categorySelect.innerHTML = categories.map(category => 
+        `<option value="${category}" ${category === currentCategoryFilter ? 'selected' : ''}>
+            ${category}
+        </option>`
+    ).join('');
+}
+
+// Initialize the app when the DOM is loaded
+document.addEventListener('DOMContentLoaded', init);
