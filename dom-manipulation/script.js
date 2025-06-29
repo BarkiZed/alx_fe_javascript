@@ -1,21 +1,51 @@
-// Simulated server data (would typically come from an API)
+// Simulated "server" quote data (pretend this comes from a backend)
 let serverQuotes = [
   { id: 1, text: "Be yourself; everyone else is already taken.", category: "Wisdom", updatedAt: 1 },
   { id: 2, text: "So many books, so little time.", category: "Books", updatedAt: 1 }
 ];
 
-// Local quotes data with timestamps
+// Local storage of quotes
 let localQuotes = [...serverQuotes.map(q => ({ ...q }))];
 
-// DOM Elements
+// DOM elements
 const quoteDisplay = document.getElementById("quoteDisplay");
 const newQuoteBtn = document.getElementById("newQuote");
 const addQuoteBtn = document.getElementById("addQuoteBtn");
 const categoryFilter = document.getElementById("categoryFilter");
 
-// Generate unique IDs and timestamps
-function generateId() {
-  return Date.now() + Math.floor(Math.random() * 1000);
+// ✅ Step 1: Simulate fetching quotes from a server
+function fetchQuotesFromServer() {
+  // In a real app, you'd fetch from an API
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(serverQuotes);
+    }, 500); // simulate network delay
+  });
+}
+
+// ✅ Step 2: Sync local quotes with "server"
+async function syncWithServer() {
+  const fetchedQuotes = await fetchQuotesFromServer();
+  let conflicts = [];
+
+  fetchedQuotes.forEach(serverQuote => {
+    const localIndex = localQuotes.findIndex(q => q.id === serverQuote.id);
+    if (localIndex === -1) {
+      localQuotes.push(serverQuote);
+    } else {
+      const localQuote = localQuotes[localIndex];
+      if (localQuote.updatedAt < serverQuote.updatedAt) {
+        localQuotes[localIndex] = serverQuote;
+        conflicts.push(serverQuote);
+      }
+    }
+  });
+
+  if (conflicts.length > 0) {
+    alert(`⚠️ ${conflicts.length} quote(s) updated from the server due to conflict.`);
+  }
+
+  updateCategoryOptions();
 }
 
 // Show a random quote
@@ -43,12 +73,12 @@ function addQuote() {
   const category = document.getElementById("newQuoteCategory").value.trim();
 
   if (!text || !category) {
-    alert("Both quote and category are required.");
+    alert("Please enter both quote and category.");
     return;
   }
 
   const newQuote = {
-    id: generateId(),
+    id: Date.now(),
     text,
     category,
     updatedAt: Date.now()
@@ -56,43 +86,12 @@ function addQuote() {
 
   localQuotes.push(newQuote);
   updateCategoryOptions();
+  alert("Quote added locally. Sync pending.");
   document.getElementById("newQuoteText").value = "";
   document.getElementById("newQuoteCategory").value = "";
-  alert("Quote added locally! Syncing with server...");
 }
 
-// Sync local quotes with simulated server
-function syncWithServer() {
-  let conflicts = [];
-
-  // Step 1: Check for conflicts (same id, different content)
-  serverQuotes.forEach(serverQuote => {
-    const localIndex = localQuotes.findIndex(q => q.id === serverQuote.id);
-
-    if (localIndex === -1) {
-      // New quote from server
-      localQuotes.push(serverQuote);
-    } else {
-      const localQuote = localQuotes[localIndex];
-      if (localQuote.updatedAt < serverQuote.updatedAt) {
-        // Server wins (conflict)
-        localQuotes[localIndex] = serverQuote;
-        conflicts.push(serverQuote);
-      }
-    }
-  });
-
-  // Step 2: Update UI
-  if (conflicts.length > 0) {
-    alert(`⚠️ Conflict detected. ${conflicts.length} quotes updated from server.`);
-  } else {
-    console.log("✅ No conflicts. Data in sync.");
-  }
-
-  updateCategoryOptions();
-}
-
-// Build unique categories in dropdown
+// Update categories dropdown
 function updateCategoryOptions() {
   const categories = [...new Set(localQuotes.map(q => q.category))];
   categoryFilter.innerHTML = `<option value="all">All</option>`;
@@ -104,7 +103,7 @@ function updateCategoryOptions() {
   });
 }
 
-// Event Listeners
+// Event listeners
 newQuoteBtn.addEventListener("click", showRandomQuote);
 addQuoteBtn.addEventListener("click", addQuote);
 categoryFilter.addEventListener("change", showRandomQuote);
@@ -113,5 +112,5 @@ categoryFilter.addEventListener("change", showRandomQuote);
 updateCategoryOptions();
 syncWithServer();
 
-// Periodic sync every 15 seconds (simulating server fetch)
+// Sync every 15 seconds
 setInterval(syncWithServer, 15000);
