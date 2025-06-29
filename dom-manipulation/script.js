@@ -1,11 +1,4 @@
-// Simulated "server" quote data (pretend this comes from a backend)
-let serverQuotes = [
-  { id: 1, text: "Be yourself; everyone else is already taken.", category: "Wisdom", updatedAt: 1 },
-  { id: 2, text: "So many books, so little time.", category: "Books", updatedAt: 1 }
-];
-
-// Local storage of quotes
-let localQuotes = [...serverQuotes.map(q => ({ ...q }))];
+let localQuotes = []; // start empty and fetch from server
 
 // DOM elements
 const quoteDisplay = document.getElementById("quoteDisplay");
@@ -13,36 +6,44 @@ const newQuoteBtn = document.getElementById("newQuote");
 const addQuoteBtn = document.getElementById("addQuoteBtn");
 const categoryFilter = document.getElementById("categoryFilter");
 
-// ✅ Step 1: Simulate fetching quotes from a server
-function fetchQuotesFromServer() {
-  // In a real app, you'd fetch from an API
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(serverQuotes);
-    }, 500); // simulate network delay
-  });
+// ✅ Step 1: Fetch quotes from mock API (required check)
+async function fetchQuotesFromServer() {
+  try {
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts");
+    const data = await response.json();
+
+    // Map API data to quote format: {id, text, category, updatedAt}
+    const serverQuotes = data.slice(0, 10).map(post => ({
+      id: post.id,
+      text: post.title,
+      category: "Server",
+      updatedAt: Date.now()
+    }));
+
+    return serverQuotes;
+  } catch (error) {
+    console.error("Failed to fetch quotes from server:", error);
+    return [];
+  }
 }
 
-// ✅ Step 2: Sync local quotes with "server"
+// ✅ Step 2: Sync with server
 async function syncWithServer() {
-  const fetchedQuotes = await fetchQuotesFromServer();
+  const serverQuotes = await fetchQuotesFromServer();
   let conflicts = [];
 
-  fetchedQuotes.forEach(serverQuote => {
-    const localIndex = localQuotes.findIndex(q => q.id === serverQuote.id);
-    if (localIndex === -1) {
+  serverQuotes.forEach(serverQuote => {
+    const index = localQuotes.findIndex(q => q.id === serverQuote.id);
+    if (index === -1) {
       localQuotes.push(serverQuote);
-    } else {
-      const localQuote = localQuotes[localIndex];
-      if (localQuote.updatedAt < serverQuote.updatedAt) {
-        localQuotes[localIndex] = serverQuote;
-        conflicts.push(serverQuote);
-      }
+    } else if (localQuotes[index].updatedAt < serverQuote.updatedAt) {
+      localQuotes[index] = serverQuote;
+      conflicts.push(serverQuote);
     }
   });
 
   if (conflicts.length > 0) {
-    alert(`⚠️ ${conflicts.length} quote(s) updated from the server due to conflict.`);
+    alert(`⚠️ ${conflicts.length} quote(s) updated from server.`);
   }
 
   updateCategoryOptions();
@@ -58,7 +59,7 @@ function showRandomQuote() {
   }
 
   if (filtered.length === 0) {
-    quoteDisplay.textContent = "No quotes in this category.";
+    quoteDisplay.textContent = "No quotes available.";
     return;
   }
 
@@ -73,7 +74,7 @@ function addQuote() {
   const category = document.getElementById("newQuoteCategory").value.trim();
 
   if (!text || !category) {
-    alert("Please enter both quote and category.");
+    alert("Both quote and category are required.");
     return;
   }
 
@@ -86,12 +87,12 @@ function addQuote() {
 
   localQuotes.push(newQuote);
   updateCategoryOptions();
-  alert("Quote added locally. Sync pending.");
+  alert("Quote added locally.");
   document.getElementById("newQuoteText").value = "";
   document.getElementById("newQuoteCategory").value = "";
 }
 
-// Update categories dropdown
+// Update categories
 function updateCategoryOptions() {
   const categories = [...new Set(localQuotes.map(q => q.category))];
   categoryFilter.innerHTML = `<option value="all">All</option>`;
@@ -108,9 +109,6 @@ newQuoteBtn.addEventListener("click", showRandomQuote);
 addQuoteBtn.addEventListener("click", addQuote);
 categoryFilter.addEventListener("change", showRandomQuote);
 
-// Initial setup
-updateCategoryOptions();
+// Initial load and periodic sync
 syncWithServer();
-
-// Sync every 15 seconds
 setInterval(syncWithServer, 15000);
