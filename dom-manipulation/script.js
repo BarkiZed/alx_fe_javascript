@@ -1,29 +1,46 @@
 // Initial quotes data
-let quotes = [
-    { text: "The only way to do great work is to love what you do.", category: "inspiration" },
-    { text: "Innovation distinguishes between a leader and a follower.", category: "business" },
-    { text: "Your time is limited, don't waste it living someone else's life.", category: "life" },
-    { text: "Stay hungry, stay foolish.", category: "inspiration" },
-    { text: "The journey of a thousand miles begins with one step.", category: "life" }
-];
+let quotes = [];
 
 // DOM elements
 const quoteDisplay = document.getElementById('quoteDisplay');
 const newQuoteBtn = document.getElementById('newQuote');
 const showAddFormBtn = document.getElementById('showAddForm');
 const categorySelect = document.getElementById('categorySelect');
+const exportQuotesBtn = document.getElementById('exportQuotes');
+const importQuotesBtn = document.getElementById('importQuotes');
+const importFileInput = document.getElementById('importFile');
+const clearStorageBtn = document.getElementById('clearStorage');
 
 // Current filter
 let currentCategoryFilter = 'all';
 
 // Initialize the app
 function init() {
+    // Load quotes from local storage
+    loadQuotes();
+    
+    // If no quotes in storage, load default quotes
+    if (quotes.length === 0) {
+        quotes = [
+            { text: "The only way to do great work is to love what you do.", category: "inspiration" },
+            { text: "Innovation distinguishes between a leader and a follower.", category: "business" },
+            { text: "Your time is limited, don't waste it living someone else's life.", category: "life" },
+            { text: "Stay hungry, stay foolish.", category: "inspiration" },
+            { text: "The journey of a thousand miles begins with one step.", category: "life" }
+        ];
+        saveQuotes();
+    }
+    
     // Display a random quote on page load
     showRandomQuote();
     
     // Set up event listeners
     newQuoteBtn.addEventListener('click', showRandomQuote);
     showAddFormBtn.addEventListener('click', createAddQuoteForm);
+    exportQuotesBtn.addEventListener('click', exportToJson);
+    importQuotesBtn.addEventListener('click', () => importFileInput.click());
+    importFileInput.addEventListener('change', importFromJsonFile);
+    clearStorageBtn.addEventListener('click', clearAllQuotes);
     
     // Populate category filter
     updateCategoryFilter();
@@ -33,6 +50,21 @@ function init() {
         currentCategoryFilter = this.value;
         showRandomQuote();
     });
+}
+
+// Load quotes from local storage
+function loadQuotes() {
+    const storedQuotes = localStorage.getItem('quotes');
+    if (storedQuotes) {
+        quotes = JSON.parse(storedQuotes);
+    }
+}
+
+// Save quotes to local storage
+function saveQuotes() {
+    localStorage.setItem('quotes', JSON.stringify(quotes));
+    // Store last update time in session storage
+    sessionStorage.setItem('lastUpdated', new Date().toISOString());
 }
 
 // Display a random quote
@@ -62,9 +94,12 @@ function showRandomQuote() {
         <p class="quote-text">"${randomQuote.text}"</p>
         <p class="quote-category">— ${randomQuote.category}</p>
     `;
+    
+    // Store last viewed quote in session storage
+    sessionStorage.setItem('lastViewedQuote', JSON.stringify(randomQuote));
 }
 
-// Create the add quote form (as required by the task)
+// Create the add quote form
 function createAddQuoteForm() {
     // Check if form already exists
     if (document.getElementById('addQuoteForm')) {
@@ -111,6 +146,9 @@ function addQuote() {
         // Add the new quote to the array
         quotes.push({ text, category });
         
+        // Save to local storage
+        saveQuotes();
+        
         // Update the category filter
         updateCategoryFilter();
         
@@ -135,6 +173,70 @@ function updateCategoryFilter() {
             ${category}
         </option>`
     ).join('');
+}
+
+// Export quotes to JSON file
+function exportToJson() {
+    const dataStr = JSON.stringify(quotes, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = 'quotes.json';
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+}
+
+// Import quotes from JSON file
+function importFromJsonFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const fileReader = new FileReader();
+    fileReader.onload = function(e) {
+        try {
+            const importedQuotes = JSON.parse(e.target.result);
+            
+            // Validate imported data
+            if (!Array.isArray(importedQuotes)) {
+                throw new Error('Imported data is not an array');
+            }
+            
+            // Check each quote has required fields
+            for (const quote of importedQuotes) {
+                if (!quote.text || !quote.category) {
+                    throw new Error('Some quotes are missing required fields');
+                }
+            }
+            
+            // Add imported quotes to our collection
+            quotes.push(...importedQuotes);
+            saveQuotes();
+            updateCategoryFilter();
+            showRandomQuote();
+            
+            alert(`Successfully imported ${importedQuotes.length} quotes!`);
+        } catch (error) {
+            alert('Error importing quotes: ' + error.message);
+            console.error('Import error:', error);
+        }
+        
+        // Reset file input
+        event.target.value = '';
+    };
+    fileReader.readAsText(file);
+}
+
+// Clear all quotes from storage
+function clearAllQuotes() {
+    if (confirm('Are you sure you want to delete all quotes? This cannot be undone.')) {
+        quotes = [];
+        localStorage.removeItem('quotes');
+        updateCategoryFilter();
+        showRandomQuote();
+        alert('All quotes have been cleared.');
+    }
 }
 
 // Initialize the app when the DOM is loaded
