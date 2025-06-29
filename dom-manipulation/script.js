@@ -11,7 +11,6 @@ let quotes = [
 const quoteDisplay = document.getElementById('quoteDisplay');
 const newQuoteBtn = document.getElementById('newQuote');
 const showAddFormBtn = document.getElementById('showAddForm');
-const addQuoteForm = document.getElementById('addQuoteForm');
 const categorySelect = document.getElementById('categorySelect');
 
 // Current filter
@@ -24,7 +23,7 @@ function init() {
     
     // Set up event listeners
     newQuoteBtn.addEventListener('click', showRandomQuote);
-    showAddFormBtn.addEventListener('click', showAddForm);
+    showAddFormBtn.addEventListener('click', createAddQuoteForm);
     
     // Populate category filter
     updateCategoryFilter();
@@ -65,17 +64,39 @@ function showRandomQuote() {
     `;
 }
 
-// Show the add quote form
-function showAddForm() {
-    addQuoteForm.style.display = 'block';
+// Create the add quote form (as required by the task)
+function createAddQuoteForm() {
+    // Check if form already exists
+    if (document.getElementById('addQuoteForm')) {
+        document.getElementById('addQuoteForm').style.display = 'block';
+        return;
+    }
+
+    // Create form container
+    const formContainer = document.createElement('div');
+    formContainer.id = 'addQuoteForm';
+    formContainer.className = 'form-container';
+    formContainer.innerHTML = `
+        <h3>Add New Quote</h3>
+        <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
+        <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
+        <button onclick="addQuote()">Add Quote</button>
+        <button onclick="hideAddForm()">Cancel</button>
+    `;
+    
+    // Add form to the DOM
+    document.body.appendChild(formContainer);
 }
 
 // Hide the add quote form
 function hideAddForm() {
-    addQuoteForm.style.display = 'none';
-    // Clear the form fields
-    document.getElementById('newQuoteText').value = '';
-    document.getElementById('newQuoteCategory').value = '';
+    const form = document.getElementById('addQuoteForm');
+    if (form) {
+        form.style.display = 'none';
+        // Clear the form fields
+        document.getElementById('newQuoteText').value = '';
+        document.getElementById('newQuoteCategory').value = '';
+    }
 }
 
 // Add a new quote
