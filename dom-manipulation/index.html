@@ -1,47 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dynamic Quote Generator</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-    #quoteDisplay {
-      margin: 20px 0;
-      font-size: 1.2em;
-      font-weight: bold;
-    }
-    .quote-form input {
-      margin: 5px;
-      padding: 5px;
-    }
-    .quote-form button {
-      padding: 5px 10px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Quote Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #quoteDisplay {
+            margin: 30px 0;
+            padding: 20px;
+            border-left: 5px solid #ddd;
+            background-color: #f9f9f9;
+        }
+        .quote-text {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        .quote-category {
+            color: #666;
+            font-style: italic;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button.secondary {
+            background-color: #2196F3;
+        }
+        button.secondary:hover {
+            background-color: #0b7dda;
+        }
+        input {
+            padding: 8px;
+            margin: 5px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .form-container {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        .category-filter {
+            margin-bottom: 20px;
+        }
+        .storage-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-  <h1>Dynamic Quote Generator</h1>
-
-  <div>
-    <label for="categoryFilter">Filter by category:</label>
-    <select id="categoryFilter">
-      <option value="all">All</option>
-    </select>
-  </div>
-
-  <div id="quoteDisplay">Click the button to see a quote!</div>
-  <button id="newQuote">Show New Quote</button>
-
-  <h2>Add a New Quote</h2>
-<div class="quote-form">
-    <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
-    <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
-    <button id="addQuoteBtn">Add Quote</button>
-  </div>
-  <script src="script.js"></script>
+    <h1>Dynamic Quote Generator</h1>
+    
+    <div class="category-filter">
+        <label for="categorySelect">Filter by category:</label>
+        <select id="categorySelect">
+            <option value="all">All Categories</option>
+        </select>
+    </div>
+    
+    <div id="quoteDisplay">
+        <p class="quote-text">Click "Show New Quote" to see a random quote!</p>
+        <p class="quote-category"></p>
+    </div>
+    
+    <div>
+        <button id="newQuote">Show New Quote</button>
+        <button id="showAddForm">Add New Quote</button>
+    </div>
+    
+    <div class="storage-actions">
+        <button id="exportQuotes" class="secondary">Export Quotes to JSON</button>
+        <button id="importQuotes" class="secondary">Import Quotes from JSON</button>
+        <input type="file" id="importFile" accept=".json" class="hidden" />
+        <button id="clearStorage" class="secondary">Clear All Quotes</button>
+    </div>
+    
+    <script src="script.js"></script>
 </body>
 </html>
