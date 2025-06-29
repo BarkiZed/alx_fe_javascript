@@ -6,20 +6,35 @@ const newQuoteBtn = document.getElementById("newQuote");
 const addQuoteBtn = document.getElementById("addQuoteBtn");
 const categoryFilter = document.getElementById("categoryFilter");
 
-// ✅ Fetch quotes from mock server (using JSONPlaceholder)
+// ✅ Load from localStorage on page load
+function loadFromLocalStorage() {
+  const storedQuotes = localStorage.getItem("quotes");
+  if (storedQuotes) {
+    try {
+      localQuotes = JSON.parse(storedQuotes);
+    } catch (e) {
+      console.error("Error parsing localStorage data", e);
+      localQuotes = [];
+    }
+  }
+}
+
+// ✅ Save to localStorage
+function saveToLocalStorage() {
+  localStorage.setItem("quotes", JSON.stringify(localQuotes));
+}
+
+// ✅ Fetch from mock server
 async function fetchQuotesFromServer() {
   try {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts");
     const data = await response.json();
-    
-    // Convert mock data into quote format
     const serverQuotes = data.slice(0, 10).map(post => ({
       id: post.id,
       text: post.title,
       category: "Server",
       updatedAt: Date.now()
     }));
-    
     return serverQuotes;
   } catch (error) {
     console.error("Error fetching quotes:", error);
@@ -27,7 +42,7 @@ async function fetchQuotesFromServer() {
   }
 }
 
-// ✅ Sync localQuotes with fetched server data
+// ✅ Sync with server and update localStorage
 async function syncQuotes() {
   const serverQuotes = await fetchQuotesFromServer();
   let conflicts = [];
@@ -47,10 +62,11 @@ async function syncQuotes() {
     alert(`⚠️ ${conflicts.length} quote(s) updated from server.`);
   }
 
+  saveToLocalStorage(); // ✅ Save updated list
   updateCategoryOptions();
 }
 
-// ✅ POST new quote to mock server
+// ✅ POST to mock server
 async function postQuoteToServer(quote) {
   try {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
@@ -62,19 +78,19 @@ async function postQuoteToServer(quote) {
     });
 
     const result = await response.json();
-    console.log("Quote posted to server:", result);
+    console.log("Quote posted:", result);
   } catch (error) {
-    console.error("Failed to post quote to server:", error);
+    console.error("POST failed:", error);
   }
 }
 
-// ✅ Add a new quote
+// ✅ Add new quote (with POST and localStorage)
 function addQuote() {
   const text = document.getElementById("newQuoteText").value.trim();
   const category = document.getElementById("newQuoteCategory").value.trim();
 
   if (!text || !category) {
-    alert("Please enter both a quote and a category.");
+    alert("Please enter both a quote and category.");
     return;
   }
 
@@ -86,18 +102,17 @@ function addQuote() {
   };
 
   localQuotes.push(newQuote);
+  saveToLocalStorage(); // ✅ Update localStorage
   updateCategoryOptions();
   alert("✅ Quote added locally and sent to server.");
 
-  // Clear inputs
   document.getElementById("newQuoteText").value = "";
   document.getElementById("newQuoteCategory").value = "";
 
-  // POST to mock server
   postQuoteToServer(newQuote);
 }
 
-// ✅ Display a random quote
+// ✅ Display random quote
 function showRandomQuote() {
   const selectedCategory = categoryFilter.value;
   let filtered = localQuotes;
@@ -116,23 +131,26 @@ function showRandomQuote() {
   quoteDisplay.textContent = `"${quote.text}" - [${quote.category}]`;
 }
 
-// ✅ Update dropdown with unique categories
+// ✅ Update dropdown
 function updateCategoryOptions() {
   const categories = [...new Set(localQuotes.map(q => q.category))];
   categoryFilter.innerHTML = `<option value="all">All</option>`;
   categories.forEach(cat => {
-    const option = document.createElement("option");
-    option.value = cat;
-    option.textContent = cat;
-    categoryFilter.appendChild(option);
+    const opt = document.createElement("option");
+    opt.value = cat;
+    opt.textContent = cat;
+    categoryFilter.appendChild(opt);
   });
 }
 
-// Event listeners
+// Event Listeners
 newQuoteBtn.addEventListener("click", showRandomQuote);
 addQuoteBtn.addEventListener("click", addQuote);
 categoryFilter.addEventListener("change", showRandomQuote);
 
-// Initial setup
+// ✅ Initialization
+loadFromLocalStorage();
+updateCategoryOptions();
 syncQuotes();
 setInterval(syncQuotes, 15000);
+
