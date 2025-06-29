@@ -12,7 +12,7 @@ const addQuoteBtn = document.getElementById("addQuoteBtn");
 const categoryFilter = document.getElementById("categoryFilter");
 
 // Show Random Quote Function
-function showRandomQuote() {
+function displayRandomQuote() {
   const selectedCategory = categoryFilter.value;
   let filteredQuotes = quotes;
 
@@ -60,9 +60,9 @@ function updateCategoryOptions() {
 }
 
 // Event Listeners
-newQuoteBtn.addEventListener("click", showRandomQuote);
+newQuoteBtn.addEventListener("click", displayRandomQuote);
 addQuoteBtn.addEventListener("click", addQuote);
-categoryFilter.addEventListener("change", showRandomQuote);
+categoryFilter.addEventListener("change", displayRandomQuote);
 
 // Initial Setup
 updateCategoryOptions();
