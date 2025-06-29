@@ -64,6 +64,8 @@ async function syncQuotes() {
 
   saveToLocalStorage(); // ✅ Save updated list
   updateCategoryOptions();
+
+  alert("Quotes synced with server!");
 }
 
 // ✅ POST to mock server
