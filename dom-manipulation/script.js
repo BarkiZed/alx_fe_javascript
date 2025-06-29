@@ -37,7 +37,7 @@ function init() {
     // Set up event listeners
     newQuoteBtn.addEventListener('click', showRandomQuote);
     showAddFormBtn.addEventListener('click', createAddQuoteForm);
-    exportQuotesBtn.addEventListener('click', exportToJson);
+    exportQuotesBtn.addEventListener('click', exportToJsonFile);
     importQuotesBtn.addEventListener('click', () => importFileInput.click());
     importFileInput.addEventListener('change', importFromJsonFile);
     clearStorageBtn.addEventListener('click', clearAllQuotes);
@@ -175,17 +175,26 @@ function updateCategoryFilter() {
     ).join('');
 }
 
-// Export quotes to JSON file
+// Export quotes to JSON file using Blob
 function exportToJson() {
     const dataStr = JSON.stringify(quotes, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = 'quotes.json';
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
     
     const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.setAttribute('href', url);
+    linkElement.setAttribute('download', 'quotes.json');
+    document.body.appendChild(linkElement);
     linkElement.click();
+    
+    // Clean up
+    document.body.removeChild(linkElement);
+    URL.revokeObjectURL(url);
+}
+
+// Renamed to exactly match the requirement
+function exportToJsonFile() {
+    exportToJson();
 }
 
 // Import quotes from JSON file
