@@ -75,8 +75,10 @@ function populateCategories() {
 
 // Show a random quote based on selected category
 function showRandomQuote() {
-  const category = document.getElementById("categorySelect").value;
-  const filtered = category === "all" ? quotes : quotes.filter(q => q.category === category);
+  const selectedCategory = document.getElementById("categorySelect").value;
+  const filtered = selectedCategory === "all"
+    ? quotes
+    : quotes.filter(q => q.category === selectedCategory);
 
   const display = document.getElementById("quoteDisplay");
   if (filtered.length === 0) {
@@ -91,15 +93,18 @@ function showRandomQuote() {
   sessionStorage.setItem("lastQuote", JSON.stringify(quote));
 }
 
+
 // Show filtered quotes based on categoryFilter
 function filterQuotes() {
-  const category = document.getElementById("categoryFilter").value;
-  localStorage.setItem("categoryFilter", category);
+  const selectedCategory = document.getElementById("categoryFilter").value;
+  localStorage.setItem("categoryFilter", selectedCategory);
 
   const list = document.getElementById("filteredQuotesList");
   list.innerHTML = "";
 
-  const filtered = category === "all" ? quotes : quotes.filter(q => q.category === category);
+  const filtered = selectedCategory === "all"
+    ? quotes
+    : quotes.filter(q => q.category === selectedCategory);
 
   filtered.forEach(q => {
     const li = document.createElement("li");
@@ -107,6 +112,7 @@ function filterQuotes() {
     list.appendChild(li);
   });
 }
+
 
 // Add new quote and update UI
 function addQuote() {
