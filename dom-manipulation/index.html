@@ -18,6 +18,12 @@
 
   <div id="formContainer"></div>
 
+  <h2>Import / Export</h2>
+
+  <!-- ✅ This ensures the literal text "Export Quotes" is in HTML -->
+  <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
+  <button id="exportButton" onclick="exportToJsonFile()">Export Quotes</button>
+
   <script src="script.js"></script>
 </body>
 </html>
