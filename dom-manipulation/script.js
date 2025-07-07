@@ -157,3 +157,24 @@ function importFromJsonFile(event) {
       if (Array.isArray(importedQuotes)) {
         quotes.push(...importedQuotes);
         saveQuotes(
+document.addEventListener("DOMContentLoaded", function () {
+  loadQuotes();
+  populateCategories();
+  createAddQuoteForm();
+
+  // Restore last viewed quote from sessionStorage
+  const lastQuote = sessionStorage.getItem("lastQuote");
+  if (lastQuote) {
+    const display = document.getElementById("quoteDisplay");
+    const quote = JSON.parse(lastQuote);
+    display.textContent = `"${quote.text}" — ${quote.category}`;
+  } else {
+    showRandomQuote();
+  }
+
+  // ✅ Proper event listeners
+  document.getElementById("showQuoteBtn").addEventListener("click", showRandomQuote);
+  document.getElementById("exportBtn").addEventListener("click", exportToJsonFile);
+  document.getElementById("importInput").addEventListener("change", importFromJsonFile);
+  document.getElementById("categoryFilter").addEventListener("change", filterQuotes);
+});
