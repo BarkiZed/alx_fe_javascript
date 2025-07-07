@@ -156,6 +156,7 @@ function importFromJsonFile(event) {
       const importedQuotes = JSON.parse(e.target.result);
       if (Array.isArray(importedQuotes)) {
         quotes.push(...importedQuotes);
+        fileReader.readAsText(file);
         saveQuotes(
 document.addEventListener("DOMContentLoaded", function () {
   loadQuotes();
